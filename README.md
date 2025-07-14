@@ -1,5 +1,3 @@
-![Uploading image.png…]()
-
 
 # Real Estate Price Prediction \u2013 Bangalore Home Prices
 
