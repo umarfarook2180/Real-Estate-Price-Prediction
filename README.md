@@ -1,5 +1,5 @@
 
-# Real Estate Price Prediction \u2013 Bangalore Home Prices
+# Real Estate Price Prediction Bangalore Home Prices
 
 A full‑stack data science project that walks through the **end‑to‑end process** of building, serving and deploying a real‑estate price prediction system for Bangalore, India.
 
