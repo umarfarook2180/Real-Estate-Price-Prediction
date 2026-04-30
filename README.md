@@ -2,56 +2,69 @@
 
 This project is a full-stack web application that predicts Bangalore real estate prices using machine learning.
 
-## 🔍 Overview
+## Overview
 
-* Predicts property prices based on area, location, number of bedrooms, etc.
-* Built with Linear Regression and deployed using Flask and AWS EC2.
+* Predicts property prices based on area, location, number of bedrooms, and bathrooms.
+* Uses a saved scikit-learn Linear Regression model.
+* Serves the browser client and Flask API from the same app for easier deployment.
 
-## 🧠 Features
+## Features
 
-* Data preprocessing: cleaning, outlier removal, feature engineering
-* Model training: GridSearchCV, k-Fold Cross Validation
-* Frontend: HTML, CSS, JavaScript
-* Backend: Python Flask API
-* Deployment: AWS EC2 with Nginx setup
+* Data preprocessing: cleaning, outlier removal, and feature engineering.
+* Model training: GridSearchCV and k-Fold Cross Validation.
+* Frontend: HTML, CSS, and JavaScript.
+* Backend: Python Flask API.
+* Production entrypoint: Gunicorn with a `Procfile`.
+* Health check endpoint: `GET /health`.
 
-## 🛠 Tech Stack
+## Tech Stack
 
-* Python, Pandas, NumPy, scikit-learn
-* Flask, HTML/CSS/JavaScript
-* AWS EC2, Nginx
+* Python, Pandas, NumPy, scikit-learn.
+* Flask, Gunicorn.
+* HTML, CSS, JavaScript.
+* AWS EC2 or any Procfile/Gunicorn-compatible host.
 
-## 🚀 How to Run
+## Run Locally
 
-1. Train the model (`model_training/`)
-2. Start Flask server: `python server.py`
-3. Run frontend (open `index.html`)
-4. Deployed version available on AWS EC2 (if configured)
-
-## 📂 Project Structure
-
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python server/server.py
 ```
+
+Open `http://127.0.0.1:5000`.
+
+## Production
+
+The app is WSGI-ready through Gunicorn:
+
+```bash
+gunicorn server.server:app
+```
+
+Platforms that support Procfiles can use:
+
+```bash
+web: gunicorn server.server:app
+```
+
+## Project Structure
+
+```text
 ├── client/               # Frontend files
-├── server/               # Flask backend files
-├── model_training/       # Jupyter notebooks for training
+├── server/               # Flask backend and model artifacts
+├── model/                # Notebook and model files
 ├── requirements.txt      # Python dependencies
+├── Procfile              # Production process command
 ```
 
-## 📡 Deployment Steps (EC2)
+## Dataset
 
-* Launch EC2 instance and open port 80
-* Set up Nginx config for reverse proxy
-* Deploy backend and frontend code to `/home/ubuntu`
-* Start Flask server and access site using public EC2 URL
+* Source: Kaggle Bangalore Home Prices Dataset.
 
-## 📊 Dataset
-
-* Source: Kaggle Bangalore Home Prices Dataset
-
-## 👤 Author
+## Author
 
 Umar Farook
 
----
-
-> Built as part of a complete Data Science learning project — combining data preprocessing, ML modeling, and full-stack deployment.
+Built as part of a complete Data Science learning project combining data preprocessing, ML modeling, and full-stack deployment.

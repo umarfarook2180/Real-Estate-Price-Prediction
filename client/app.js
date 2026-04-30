@@ -1,62 +1,89 @@
 function getBathValue() {
-  var uiBathrooms = document.getElementsByName("uiBathrooms");
-  for(var i in uiBathrooms) {
-    if(uiBathrooms[i].checked) {
-        return parseInt(i)+1;
+  const uiBathrooms = document.getElementsByName("uiBathrooms");
+  for (const bathroom of uiBathrooms) {
+    if (bathroom.checked) {
+        return parseInt(bathroom.value, 10);
     }
   }
-  return -1; // Invalid Value
+  return -1;
 }
 
 function getBHKValue() {
-  var uiBHK = document.getElementsByName("uiBHK");
-  for(var i in uiBHK) {
-    if(uiBHK[i].checked) {
-        return parseInt(i)+1;
+  const uiBHK = document.getElementsByName("uiBHK");
+  for (const bhk of uiBHK) {
+    if (bhk.checked) {
+        return parseInt(bhk.value, 10);
     }
   }
-  return -1; // Invalid Value
+  return -1;
 }
 
-function onClickedEstimatePrice() {
-  console.log("Estimate price button clicked");
-  var sqft = document.getElementById("uiSqft");
-  var bhk = getBHKValue();
-  var bathrooms = getBathValue();
-  var location = document.getElementById("uiLocations");
-  var estPrice = document.getElementById("uiEstimatedPrice");
-
-  var url = "http://127.0.0.1:5000/predict_home_price"; //Use this if you are NOT using nginx which is first 7 tutorials
-  // var url = "/api/predict_home_price"; // Use this if  you are using nginx. i.e tutorial 8 and onwards
-
-  $.post(url, {
-      total_sqft: parseFloat(sqft.value),
-      bhk: bhk,
-      bath: bathrooms,
-      location: location.value
-  },function(data, status) {
-      console.log(data.estimated_price);
-      estPrice.innerHTML = "<h2>" + data.estimated_price.toString() + " Lakh</h2>";
-      console.log(status);
-  });
+function getApiBaseUrl() {
+  return window.location.protocol === "file:" ? "http://127.0.0.1:5000" : "";
 }
 
-function onPageLoad() {
-  console.log( "document loaded" );
-  var url = "http://127.0.0.1:5000/get_location_names"; // Use this if you are NOT using nginx which is first 7 tutorials
-  // var url = "/api/get_location_names"; // Use this if  you are using nginx. i.e tutorial 8 and onwards
-  $.get(url,function(data, status) {
-      console.log("got response for get_location_names request");
-      if(data) {
-          var locations = data.locations;
-          var uiLocations = document.getElementById("uiLocations");
-          $('#uiLocations').empty();
-          for(var i in locations) {
-              var opt = new Option(locations[i]);
-              $('#uiLocations').append(opt);
-          }
-      }
-  });
+function setResult(message, isError) {
+  const estPrice = document.getElementById("uiEstimatedPrice");
+  estPrice.textContent = message;
+  estPrice.classList.toggle("error", Boolean(isError));
+}
+
+async function onClickedEstimatePrice() {
+  const sqft = document.getElementById("uiSqft");
+  const bhk = getBHKValue();
+  const bathrooms = getBathValue();
+  const location = document.getElementById("uiLocations");
+  const totalSqft = parseFloat(sqft.value);
+
+  if (!Number.isFinite(totalSqft) || totalSqft <= 0) {
+    setResult("Enter a valid area", true);
+    return;
+  }
+
+  if (!location.value) {
+    setResult("Choose a location", true);
+    return;
+  }
+
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/predict_home_price`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        total_sqft: totalSqft,
+        bhk: bhk,
+        bath: bathrooms,
+        location: location.value
+      })
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Unable to estimate price");
+    }
+
+    setResult(`${data.estimated_price} Lakh`, false);
+  } catch (error) {
+    setResult(error.message, true);
+  }
+}
+
+async function onPageLoad() {
+  const uiLocations = document.getElementById("uiLocations");
+
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/get_location_names`);
+    const data = await response.json();
+
+    uiLocations.replaceChildren(new Option("Choose a Location", ""));
+    data.locations.forEach((location) => {
+      uiLocations.append(new Option(location, location));
+    });
+  } catch (error) {
+    setResult("Could not load locations", true);
+  }
 }
 
 window.onload = onPageLoad;
